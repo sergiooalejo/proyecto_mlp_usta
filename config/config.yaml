@@ -1,0 +1,35 @@
+# Rutas relativas a la raíz del proyecto.
+datos:
+  ruta: data/SeoulBikeData.csv
+
+# División cronológica por días completos, sin mezclar registros.
+train_size: 0.65
+test_size: 0.35
+semilla: 42
+objetivo: alquileres
+horizonte_horas: 24
+
+# Cada ejecución crea una subcarpeta con fecha y un identificador único.
+artefactos:
+  carpeta: notebook/artifacts/02_Artifacts_prediction_by_next_day/prefect_runs
+
+# Parámetros de los tres regresores.
+candidatos:
+  regresion_lineal: {}
+  random_forest:
+    n_estimators: 200
+    min_samples_leaf: 4
+    max_features: 1.0
+    n_jobs: -1
+    random_state: 42
+  gradient_boosting:
+    n_estimators: 200
+    learning_rate: 0.05
+    max_depth: 3
+    loss: squared_error
+    random_state: 42
+
+# Se puede activar también con --mlflow.
+registrar_mlflow: false
+experimento_mlflow: seoul-bike-next-day
+mlflow_tracking_uri: http://localhost:5000

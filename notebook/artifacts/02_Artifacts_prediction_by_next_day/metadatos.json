@@ -1,0 +1,41 @@
+{
+  "dataset_sha256": "86bed6633ebdc2530763a8ba0bc2593d9c7f5b42a091130c51988c4029c9fb81",
+  "origen_fecha": "2017-12-01T00:00:00",
+  "features": [
+    "dia_semana",
+    "hora",
+    "dias_desde_inicio",
+    "fecha_sin",
+    "fecha_cos",
+    "fin_semana_hora_sin",
+    "fin_semana_hora_cos",
+    "lag_24h",
+    "lag_48h",
+    "lag_168h",
+    "media_horaria_dia_anterior",
+    "media_horaria_7dias_previos"
+  ],
+  "categoricas": [
+    "dia_semana",
+    "hora"
+  ],
+  "numericas": [
+    "dias_desde_inicio",
+    "fecha_sin",
+    "fecha_cos",
+    "fin_semana_hora_sin",
+    "fin_semana_hora_cos",
+    "lag_24h",
+    "lag_48h",
+    "lag_168h",
+    "media_horaria_dia_anterior",
+    "media_horaria_7dias_previos"
+  ],
+  "fecha_corte": "2018-07-26T00:00:00",
+  "horizonte_horas": 24,
+  "origen_pronostico": "00:00 del dia objetivo; historial hasta las 23:00 del dia anterior",
+  "imputacion": "mediana ajustada solo con train e indicadores de ausencia",
+  "objetivo_ausente": "conteo original igual a cero",
+  "prediccion": "maximum(pipeline.predict(crear_features(timestamps, historial)), 0)",
+  "nota": "Calendario e historial previo al dia objetivo; evaluacion diaria sucesiva con modelos fijos."
+}

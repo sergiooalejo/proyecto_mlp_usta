@@ -1,0 +1,3 @@
+,conjunto,desde,hasta,dias,horas_calendario,porcentaje_calendario,etiquetas_observadas
+0,train,2017-12-01,2018-07-25 23:00:00,237,5688,64.93150684931507,5640
+1,test,2018-07-26,2018-11-30 23:00:00,128,3072,35.06849315068493,2825

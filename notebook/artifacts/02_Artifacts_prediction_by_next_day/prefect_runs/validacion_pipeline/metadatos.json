@@ -1,0 +1,47 @@
+{
+  "dataset_sha256": "86bed6633ebdc2530763a8ba0bc2593d9c7f5b42a091130c51988c4029c9fb81",
+  "origen_fecha": "2017-12-01T00:00:00",
+  "fecha_corte": "2018-07-26T00:00:00",
+  "features": [
+    "dia_semana",
+    "hora",
+    "dias_desde_inicio",
+    "fecha_sin",
+    "fecha_cos",
+    "fin_semana_hora_sin",
+    "fin_semana_hora_cos",
+    "lag_24h",
+    "lag_48h",
+    "lag_168h",
+    "media_horaria_dia_anterior",
+    "media_horaria_7dias_previos"
+  ],
+  "numericas": [
+    "dias_desde_inicio",
+    "fecha_sin",
+    "fecha_cos",
+    "fin_semana_hora_sin",
+    "fin_semana_hora_cos",
+    "lag_24h",
+    "lag_48h",
+    "lag_168h",
+    "media_horaria_dia_anterior",
+    "media_horaria_7dias_previos"
+  ],
+  "categoricas": [
+    "dia_semana",
+    "hora"
+  ],
+  "horizonte_horas": 24,
+  "origen_pronostico": "00:00; historial disponible hasta las 23:00 de la víspera",
+  "evaluacion": "Modelos fijos; historial observado actualizado al avanzar cada día",
+  "postprocesamiento": "Recortar predicciones negativas a cero",
+  "python": "3.12.16",
+  "versiones": {
+    "pandas": "3.0.6",
+    "numpy": "2.5.4",
+    "scikit-learn": "1.9.1",
+    "prefect": "3.8.8",
+    "joblib": "1.6.0"
+  }
+}

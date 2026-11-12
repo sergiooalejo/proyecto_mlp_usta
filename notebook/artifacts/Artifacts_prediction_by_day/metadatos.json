@@ -1,0 +1,29 @@
+{
+  "dataset_sha256": "86bed6633ebdc2530763a8ba0bc2593d9c7f5b42a091130c51988c4029c9fb81",
+  "origen_fecha": "2017-12-01T00:00:00",
+  "features": [
+    "dia_semana",
+    "hora",
+    "dias_desde_inicio",
+    "fecha_sin",
+    "fecha_cos",
+    "fin_semana_hora_sin",
+    "fin_semana_hora_cos"
+  ],
+  "categoricas": [
+    "dia_semana",
+    "hora"
+  ],
+  "numericas": [
+    "dias_desde_inicio",
+    "fecha_sin",
+    "fecha_cos",
+    "fin_semana_hora_sin",
+    "fin_semana_hora_cos"
+  ],
+  "fecha_corte": "2018-07-26T00:00:00",
+  "horizonte_horas": 24,
+  "objetivo_ausente": "conteo original igual a cero",
+  "prediccion": "maximum(pipeline.predict(crear_features(timestamps)), 0)",
+  "nota": "Calendario sin meteorología ni rezagos. Totales diarios evaluados solo con 24 etiquetas."
+}
