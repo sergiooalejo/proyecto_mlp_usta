@@ -17,6 +17,7 @@ import time
 from datetime import datetime, timezone
 from importlib.metadata import version
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from uuid import uuid4
 
 import joblib
@@ -315,11 +316,63 @@ def registrar_mlflow(resultados, datos, evaluacion, cfg, salidas, huella, tracki
             info = mlflow.sklearn.log_model(
                 modelo, name="model", input_example=ejemplo,
                 signature=infer_signature(ejemplo, modelo.predict(ejemplo)),
-                skops_trusted_types=["sklearn.tree._tree.Tree"],
+                skops_trusted_types=["sklearn.tree._tree.Tree", "numpy.dtype"],
             )
             runs[nombre] = {"run_id": run.info.run_id, "model_uri": info.model_uri}
     guardar_json(Path(salidas) / "runs_mlflow.json", runs)
     return runs
+
+
+@task
+def promover_si_mejora(runs, evaluacion, cfg, salidas, huella, tracking_uri):
+    """Conecta entrenamiento e inferencia mediante el alias champion."""
+    import mlflow
+    import mlflow.sklearn
+    from mlflow.exceptions import MlflowException
+    from mlflow.tracking import MlflowClient
+
+    mlflow.set_tracking_uri(tracking_uri)
+    cliente = MlflowClient(tracking_uri=tracking_uri)
+    registro = cfg["registro"]
+    nombre, alias = registro["nombre_modelo"], registro.get("alias", "champion")
+    tabla = evaluacion["metricas_diarias"].loc[list(cfg["candidatos"])]
+    mejor = tabla.mae.idxmin()
+    mae = float(tabla.loc[mejor, "mae"])
+    with (Path(salidas) / "metadatos.json").open(encoding="utf-8") as archivo:
+        nuevos_metadatos = json.load(archivo)
+    try:
+        actual = cliente.get_model_version_by_alias(nombre, alias)
+    except MlflowException as exc:
+        if exc.error_code != "RESOURCE_DOES_NOT_EXIST":
+            raise
+        actual = None
+    if actual is not None:
+        run_actual = cliente.get_run(actual.run_id)
+        ruta_metadata = cfg["inferencia"]["metadatos_artefacto"]
+        with TemporaryDirectory(prefix="comparacion-champion-") as temporal:
+            ruta = cliente.download_artifacts(actual.run_id, ruta_metadata, temporal)
+            with Path(ruta).open(encoding="utf-8") as archivo:
+                anteriores = json.load(archivo)
+        # No comparar errores calculados sobre datasets o cortes diferentes.
+        comparable = (run_actual.data.tags.get("dataset_sha256") == huella
+                      and anteriores.get("fecha_corte") == nuevos_metadatos["fecha_corte"]
+                      and anteriores.get("features") == FEATURES)
+        mae_actual = run_actual.data.metrics.get("diarias_mae")
+        if not comparable or mae_actual is None:
+            return {"version": str(actual.version), "promovido": False,
+                    "motivo": "Champion con otra evaluación; requiere revisión manual"}
+        if mae >= mae_actual - 1e-8:
+            return {"version": str(actual.version), "promovido": False,
+                    "motivo": "El candidato no mejora el MAE diario del champion"}
+    nueva = mlflow.register_model(runs[mejor]["model_uri"], nombre)
+    # Comprobar que la versión puede cargarse antes de publicar el alias.
+    modelo = mlflow.sklearn.load_model(f"models:/{nombre}/{nueva.version}")
+    if list(modelo.feature_names_in_) != FEATURES:
+        raise ValueError("La versión registrada tiene un esquema incompatible.")
+    cliente.set_model_version_tag(nombre, nueva.version, "modelo", mejor)
+    cliente.set_model_version_tag(nombre, nueva.version, "criterio", "menor MAE diario")
+    cliente.set_registered_model_alias(nombre, alias, nueva.version)
+    return {"version": str(nueva.version), "promovido": True, "modelo": mejor, "mae_diario": mae}
 
 
 @flow(name="entrenamiento-seoul-bike-dia-siguiente", log_prints=True)
@@ -346,9 +399,12 @@ def flow_pipeline_prefect(
     evaluacion = evaluar_candidatos(preparados, resultados)
     carpeta = guardar_artefactos(salidas, cfg, preparados, resultados, evaluacion, huella)
     runs = {}
+    registro = None
     if cfg.get("registrar_mlflow", False):
         uri = tracking_uri or os.environ.get("MLFLOW_TRACKING_URI") or cfg.get("mlflow_tracking_uri", "http://localhost:5000")
         runs = registrar_mlflow(resultados, preparados, evaluacion, cfg, carpeta, huella, uri)
+        if cfg.get("registro", {}).get("promover_automaticamente", False):
+            registro = promover_si_mejora(runs, evaluacion, cfg, carpeta, huella, uri)
     candidatos = evaluacion["metricas_diarias"].loc[list(cfg["candidatos"])].sort_values("mae")
     mejor = candidatos.index[0]
     referencia_mae = float(evaluacion["metricas_diarias"].loc["referencia_ayer", "mae"])
@@ -357,7 +413,7 @@ def flow_pipeline_prefect(
         "r2_diario": float(candidatos.loc[mejor, "r2"]),
         "mae_referencia_ayer": referencia_mae,
         "supera_referencia_ayer_mae": bool(candidatos.loc[mejor, "mae"] < referencia_mae),
-        "artefactos": carpeta, "runs_mlflow": runs,
+        "artefactos": carpeta, "runs_mlflow": runs, "registro_champion": registro,
     }
     guardar_json(Path(carpeta) / "resumen.json", resumen)
     create_markdown_artifact(
@@ -379,5 +435,11 @@ if __name__ == "__main__":
     parser.add_argument("--mlflow", action="store_true", default=None, help="Registrar runs y modelos en MLflow")
     parser.add_argument("--tracking-uri", default=None)
     args = parser.parse_args()
-    flow_pipeline_prefect(config=args.config, datos=args.datos, salidas=args.salidas,
-                          mlflow_habilitado=args.mlflow, tracking_uri=args.tracking_uri)
+    from prefect.settings import PREFECT_API_URL, temporary_settings
+
+    with resolver_ruta(args.config).open(encoding="utf-8") as archivo:
+        configuracion = yaml.safe_load(archivo)
+    url = os.environ.get("PREFECT_API_URL") or configuracion["despliegue"]["prefect_api_url"]
+    with temporary_settings({PREFECT_API_URL: url}):
+        flow_pipeline_prefect(config=args.config, datos=args.datos, salidas=args.salidas,
+                              mlflow_habilitado=args.mlflow, tracking_uri=args.tracking_uri)

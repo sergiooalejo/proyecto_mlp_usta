@@ -1,0 +1,14 @@
+{
+  "regresion_lineal": {
+    "run_id": "1482d8f79a974a5faa14dbab0d144ee6",
+    "model_uri": "models:/m-2efd3fd561d54872aef64566d8165fb8"
+  },
+  "random_forest": {
+    "run_id": "9aa4d1d2971246e1893408817483baef",
+    "model_uri": "models:/m-426d4eafa3a648638f9e7689ecc76c3e"
+  },
+  "gradient_boosting": {
+    "run_id": "930d4181b660430ebcf120ce74fab776",
+    "model_uri": "models:/m-9e37aa8b65f64842ad5fd0e362cc0756"
+  }
+}

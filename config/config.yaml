@@ -30,6 +30,24 @@ candidatos:
     random_state: 42
 
 # Se puede activar también con --mlflow.
-registrar_mlflow: false
+registrar_mlflow: true
 experimento_mlflow: seoul-bike-next-day
 mlflow_tracking_uri: http://localhost:5000
+
+# Modelo registrado en MLflow que sirve la API.
+registro:
+  nombre_modelo: seoul-bike-next-day
+  alias: champion
+  promover_automaticamente: true
+
+inferencia:
+  metadatos_artefacto: resultados/metadatos.json
+  carpeta_salida: notebook/artifacts/inferencia
+
+# La inferencia se ejecuta diariamente a las 06:00 de Colombia.
+despliegue:
+  prefect_api_url: http://localhost:4200/api
+  nombre_entrenamiento: entrenamiento-manual
+  nombre_inferencia: inferencia-diaria
+  cron: "0 6 * * *"
+  timezone: America/Bogota

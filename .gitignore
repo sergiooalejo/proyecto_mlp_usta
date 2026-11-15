@@ -3,3 +3,7 @@ mlflow.db
 mlflow_store/
 .env/
 /venn/
+__pycache__/
+.pytest_cache/
+notebook/artifacts/inferencia/
+notebook/artifacts/prefect_runtime/

@@ -1,0 +1,27 @@
+{
+  "mejor_modelo": "random_forest",
+  "mae_diario": 4350.79049525723,
+  "r2_diario": 0.1911512211888461,
+  "mae_referencia_ayer": 4086.0646010443807,
+  "supera_referencia_ayer_mae": false,
+  "artefactos": "C:\\Users\\segep\\OneDrive\\Documents\\Personal\\Maestria en Ciencia de Datos\\Semestre 3\\MLOps\\Proyecto\\proyecto_mlp_usta\\notebook\\artifacts\\02_Artifacts_prediction_by_next_day\\prefect_runs\\20261115T202853Z_2d3387c9",
+  "runs_mlflow": {
+    "regresion_lineal": {
+      "run_id": "1482d8f79a974a5faa14dbab0d144ee6",
+      "model_uri": "models:/m-2efd3fd561d54872aef64566d8165fb8"
+    },
+    "random_forest": {
+      "run_id": "9aa4d1d2971246e1893408817483baef",
+      "model_uri": "models:/m-426d4eafa3a648638f9e7689ecc76c3e"
+    },
+    "gradient_boosting": {
+      "run_id": "930d4181b660430ebcf120ce74fab776",
+      "model_uri": "models:/m-9e37aa8b65f64842ad5fd0e362cc0756"
+    }
+  },
+  "registro_champion": {
+    "version": "1",
+    "promovido": false,
+    "motivo": "El candidato no mejora el MAE diario del champion"
+  }
+}

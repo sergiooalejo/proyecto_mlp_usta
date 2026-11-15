@@ -1,0 +1,49 @@
+{
+  "datos": {
+    "ruta": "data/SeoulBikeData.csv"
+  },
+  "train_size": 0.65,
+  "test_size": 0.35,
+  "semilla": 42,
+  "objetivo": "alquileres",
+  "horizonte_horas": 24,
+  "artefactos": {
+    "carpeta": "notebook/artifacts/02_Artifacts_prediction_by_next_day/prefect_runs"
+  },
+  "candidatos": {
+    "regresion_lineal": {},
+    "random_forest": {
+      "n_estimators": 200,
+      "min_samples_leaf": 4,
+      "max_features": 1.0,
+      "n_jobs": -1,
+      "random_state": 42
+    },
+    "gradient_boosting": {
+      "n_estimators": 200,
+      "learning_rate": 0.05,
+      "max_depth": 3,
+      "loss": "squared_error",
+      "random_state": 42
+    }
+  },
+  "registrar_mlflow": true,
+  "experimento_mlflow": "seoul-bike-next-day",
+  "mlflow_tracking_uri": "http://localhost:5000",
+  "registro": {
+    "nombre_modelo": "seoul-bike-next-day",
+    "alias": "champion",
+    "promover_automaticamente": true
+  },
+  "inferencia": {
+    "metadatos_artefacto": "resultados/metadatos.json",
+    "carpeta_salida": "notebook/artifacts/inferencia"
+  },
+  "despliegue": {
+    "prefect_api_url": "http://localhost:4200/api",
+    "nombre_entrenamiento": "entrenamiento-manual",
+    "nombre_inferencia": "inferencia-diaria",
+    "cron": "0 6 * * *",
+    "timezone": "America/Bogota"
+  }
+}
